@@ -1,34 +1,19 @@
 package org.allaymc.server.plugin.js;
 
-import com.caoccao.javet.enums.V8AwaitMode;
-import com.caoccao.javet.interception.logging.JavetStandardConsoleInterceptor;
-import com.caoccao.javet.interop.NodeRuntime;
 import com.caoccao.javet.interop.V8Host;
 import com.caoccao.javet.interop.V8Runtime;
 import com.caoccao.javet.interop.callback.JavetBuiltInModuleResolver;
 import com.caoccao.javet.interop.converters.JavetProxyConverter;
-import com.caoccao.javet.interop.engine.IJavetEngine;
-import com.caoccao.javet.interop.engine.JavetEnginePool;
-import com.caoccao.javet.interop.options.V8RuntimeOptions;
-import com.caoccao.javet.node.modules.NodeModuleModule;
-import com.caoccao.javet.node.modules.NodeModuleProcess;
-import com.caoccao.javet.values.reference.V8Module;
 import com.caoccao.javet.values.reference.V8ValueObject;
 import io.mvnpm.esbuild.Bundler;
 import io.mvnpm.esbuild.model.BundleOptions;
 import io.mvnpm.esbuild.model.EsBuildConfig;
-import io.mvnpm.esbuild.model.WebDependency;
 import lombok.SneakyThrows;
 import org.allaymc.api.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
 
 /**
  * Allay Project 2024/2/9

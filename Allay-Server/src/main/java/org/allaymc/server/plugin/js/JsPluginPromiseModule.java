@@ -2,17 +2,11 @@ package org.allaymc.server.plugin.js;
 
 import com.caoccao.javet.annotations.V8Function;
 import com.caoccao.javet.exceptions.JavetException;
-import com.caoccao.javet.interop.NodeRuntime;
 import com.caoccao.javet.interop.V8Runtime;
-import com.caoccao.javet.values.V8Value;
-import com.caoccao.javet.values.reference.*;
+import com.caoccao.javet.values.reference.V8ValueObject;
+import com.caoccao.javet.values.reference.V8ValuePromise;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.allaymc.api.plugin.Plugin;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Slf4j
 public class JsPluginPromiseModule {

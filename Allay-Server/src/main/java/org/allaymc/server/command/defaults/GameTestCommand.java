@@ -20,12 +20,10 @@ import org.allaymc.api.utils.Identifier;
 import org.allaymc.api.utils.JSONUtils;
 import org.allaymc.api.utils.TextFormat;
 import org.allaymc.server.block.type.BlockLootTable;
-import org.allaymc.server.utils.ResourceUtils;
 import org.cloudburstmc.nbt.NbtMap;
 import org.cloudburstmc.protocol.bedrock.data.command.CommandData;
 import org.joml.Vector3f;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;

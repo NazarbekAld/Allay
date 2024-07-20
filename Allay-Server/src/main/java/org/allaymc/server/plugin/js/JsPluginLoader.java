@@ -1,13 +1,5 @@
 package org.allaymc.server.plugin.js;
 
-import com.caoccao.javet.enums.JSRuntimeType;
-import com.caoccao.javet.interop.NodeRuntime;
-import com.caoccao.javet.interop.V8Host;
-import com.caoccao.javet.interop.V8Runtime;
-import com.caoccao.javet.interop.engine.JavetEngineConfig;
-import com.caoccao.javet.interop.engine.JavetEnginePool;
-import com.caoccao.javet.interop.options.RuntimeOptions;
-import com.caoccao.javet.values.reference.V8ValueObject;
 import com.google.gson.reflect.TypeToken;
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -20,11 +12,11 @@ import org.allaymc.api.plugin.PluginLoader;
 import org.allaymc.api.server.Server;
 import org.allaymc.api.utils.JSONUtils;
 import org.allaymc.server.i18n.AllayI18n;
-import org.allaymc.server.plugin.SimplePluginDescriptor;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
