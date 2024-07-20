@@ -47,8 +47,8 @@ We wish this project to be as concise, reliable, and efficient as Allay.
     - Allay is based on the latest Java21, which theoretically gives it better performance.
 - **Easy to get started:**
     - You can write plugins for Allay in Java/JVM.
-    - We introduced GraalVM and JavaScript support, which means you can write plugins in JavaScript/TypeScript and
-      get the same performance as Java and the ability to interoperate seamlessly.
+    - <s>We introduced GraalVM and JavaScript support, which means you can write plugins in JavaScript/TypeScript and
+      get the same performance as Java and the ability to interoperate seamlessly.</s> (TODO replace)
 - **Highly Customizable:** Allay offers a large number of interfaces that BDS does not. On top of that, you can even control the sending of packets directly for maximum customization.
 - **Security:**
     - Allay has more checks on client packets than BDS, and theoretically does not have many of the pernicious vulnerabilities that BDS has.
