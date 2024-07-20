@@ -26,14 +26,12 @@ public class JsPluginPromiseModule {
     @SneakyThrows
     @V8Function(thisObjectRequired = true)
     public V8ValuePromise whenEnabled(V8ValueObject o) {
-        V8ValuePromise promise = o.get("enablePromise");
-        return promise;
+        return o.get("enablePromise");
     }
     @SneakyThrows
     @V8Function(thisObjectRequired = true)
     public V8ValuePromise whenDisabled(V8ValueObject o) {
-        V8ValuePromise promise = o.get("disablePromise");
-        return promise;
+        return o.get("disablePromise");
     }
 
     public void triggerOnEnable() throws JavetException {
