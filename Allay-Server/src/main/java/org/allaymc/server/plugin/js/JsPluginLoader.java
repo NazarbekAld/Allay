@@ -1,5 +1,13 @@
 package org.allaymc.server.plugin.js;
 
+import com.caoccao.javet.enums.JSRuntimeType;
+import com.caoccao.javet.interop.NodeRuntime;
+import com.caoccao.javet.interop.V8Host;
+import com.caoccao.javet.interop.V8Runtime;
+import com.caoccao.javet.interop.engine.JavetEngineConfig;
+import com.caoccao.javet.interop.engine.JavetEnginePool;
+import com.caoccao.javet.interop.options.RuntimeOptions;
+import com.caoccao.javet.values.reference.V8ValueObject;
 import com.google.gson.reflect.TypeToken;
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -8,16 +16,15 @@ import org.allaymc.api.i18n.I18nLoader;
 import org.allaymc.api.i18n.LangCode;
 import org.allaymc.api.plugin.PluginContainer;
 import org.allaymc.api.plugin.PluginDescriptor;
-import org.allaymc.api.plugin.PluginException;
 import org.allaymc.api.plugin.PluginLoader;
 import org.allaymc.api.server.Server;
 import org.allaymc.api.utils.JSONUtils;
 import org.allaymc.server.i18n.AllayI18n;
+import org.allaymc.server.plugin.SimplePluginDescriptor;
 
+import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
+import java.nio.file.*;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,7 +42,7 @@ public class JsPluginLoader implements PluginLoader {
 
     @Getter
     protected Path pluginPath;
-    protected PluginDescriptor descriptor;
+    protected PackageJsonDescriptor descriptor;
 
     @SneakyThrows
     public JsPluginLoader(Path pluginPath) {
@@ -45,19 +52,15 @@ public class JsPluginLoader implements PluginLoader {
     @SneakyThrows
     @Override
     public PluginDescriptor loadDescriptor() {
-        descriptor = JSONUtils.from(Files.newBufferedReader(pluginPath.resolve("plugin.json")), JsPluginDescriptor.class);
-        PluginDescriptor.checkDescriptorValid(descriptor);
+        descriptor = JSONUtils.from(Files.newBufferedReader(pluginPath.resolve("package.json")), PackageJsonDescriptor.class);
         return descriptor;
     }
 
     @SneakyThrows
     @Override
     public PluginContainer loadPlugin() {
-        // Read entrance js file
-        var entrancePath = pluginPath.resolve(descriptor.getEntrance());
-        if (!Files.exists(entrancePath)) throw new PluginException("Entrance js file not found: " + entrancePath);
         return createPluginContainer(
-                new JsPlugin(),
+                new JsPlugin(pluginPath),
                 descriptor, this,
                 getOrCreateDataFolder(descriptor.getName()),
                 new AllayI18n(new JsPluginI18nLoader(), Server.SETTINGS.genericSettings().language())

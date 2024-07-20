@@ -104,14 +104,14 @@ public final class AllayServer implements Server {
     private final EventBus eventBus = new AllayEventBus(Executors.newVirtualThreadPerTaskExecutor());
     private final BanInfo banInfo = ConfigManager.create(BanInfo.class, it -> {
         it.withConfigurer(new YamlSnakeYamlConfigurer()); // specify configurer implementation, optionally additional serdes packages
-        it.withBindFile("ban-info.yml"); // specify Path, File or pathname
+        it.withBindFile(Path.of("ban-info.yml").toAbsolutePath()); // specify Path, File or pathname
         it.withRemoveOrphans(true); // automatic removal of undeclared keys
         it.saveDefaults(); // save file if it does not exist
         it.load(true); // load and save to update comments/new fields
     });
     private final Whitelist whitelist = ConfigManager.create(Whitelist.class, it -> {
         it.withConfigurer(new YamlSnakeYamlConfigurer()); // specify configurer implementation, optionally additional serdes packages
-        it.withBindFile("whitelist.yml"); // specify Path, File or pathname
+        it.withBindFile(Path.of("whitelist.yml").toAbsolutePath()); // specify Path, File or pathname
         it.withRemoveOrphans(true); // automatic removal of undeclared keys
         it.saveDefaults(); // save file if it does not exist
         it.load(true); // load and save to update comments/new fields
@@ -178,17 +178,19 @@ public final class AllayServer implements Server {
 
         initTerminalConsole();
 
+        scoreboardService = new ScoreboardService(
+                this,
+                new JsonScoreboardStorage(Path.of("command_data/scoreboards.json").toAbsolutePath())
+        );
+
         pluginManager = new AllayPluginManager();
         pluginManager.loadPlugins(PluginLoadOrder.START_UP);
 
         worldPool.loadWorlds();
-        var cmdDataPath = Path.of("command_data");
+        var cmdDataPath = Path.of("command_data").toAbsolutePath();
         if (!Files.exists(cmdDataPath)) Files.createDirectory(cmdDataPath);
 
-        scoreboardService = new ScoreboardService(
-                this,
-                new JsonScoreboardStorage(Path.of("command_data/scoreboards.json"))
-        );
+
         commandRegistry = new AllayCommandRegistry();
         commandRegistry.registerDefaultCommands();
         networkServer = new AllayNetworkServer(this);

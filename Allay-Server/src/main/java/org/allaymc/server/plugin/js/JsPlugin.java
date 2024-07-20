@@ -1,15 +1,34 @@
 package org.allaymc.server.plugin.js;
 
+import com.caoccao.javet.enums.V8AwaitMode;
+import com.caoccao.javet.interception.logging.JavetStandardConsoleInterceptor;
+import com.caoccao.javet.interop.NodeRuntime;
+import com.caoccao.javet.interop.V8Host;
+import com.caoccao.javet.interop.V8Runtime;
+import com.caoccao.javet.interop.callback.JavetBuiltInModuleResolver;
+import com.caoccao.javet.interop.converters.JavetProxyConverter;
+import com.caoccao.javet.interop.engine.IJavetEngine;
+import com.caoccao.javet.interop.engine.JavetEnginePool;
+import com.caoccao.javet.interop.options.V8RuntimeOptions;
+import com.caoccao.javet.node.modules.NodeModuleModule;
+import com.caoccao.javet.node.modules.NodeModuleProcess;
+import com.caoccao.javet.values.reference.V8Module;
+import com.caoccao.javet.values.reference.V8ValueObject;
+import io.mvnpm.esbuild.Bundler;
+import io.mvnpm.esbuild.model.BundleOptions;
+import io.mvnpm.esbuild.model.EsBuildConfig;
+import io.mvnpm.esbuild.model.WebDependency;
 import lombok.SneakyThrows;
 import org.allaymc.api.plugin.Plugin;
-import org.allaymc.api.plugin.PluginContainer;
-import org.graalvm.polyglot.Context;
-import org.graalvm.polyglot.HostAccess;
-import org.graalvm.polyglot.Source;
-import org.graalvm.polyglot.Value;
-import org.graalvm.polyglot.io.IOAccess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 
 /**
  * Allay Project 2024/2/9
@@ -17,76 +36,73 @@ import org.slf4j.LoggerFactory;
  * @author daoge_cmd
  */
 public class JsPlugin extends Plugin {
+    protected Logger logger = null;
+    private final Path workingDirectory;
+    private JsPluginPromiseModule pluginPromiseModule;
+    private V8Runtime runtime;
 
-    protected Context jsContext;
-    protected Value jsExport;
-    protected Logger logger;
-    protected JSPluginProxyLogger proxyLogger;
-
-    @Override
-    public void setPluginContainer(PluginContainer pluginContainer) {
-        super.setPluginContainer(pluginContainer);
-        logger = LoggerFactory.getLogger(pluginContainer.descriptor().getName());
-        proxyLogger = new JSPluginProxyLogger(logger);
+    public JsPlugin(Path workingDirectory) {
+        this.workingDirectory = workingDirectory;
     }
 
     @SneakyThrows
     @Override
     public void onLoad() {
-        // ClassCastException won't happen
-        var chromeDebugPort = ((JsPluginDescriptor) pluginContainer.descriptor()).getDebugPort();
-        var cbd = Context.newBuilder("js")
-                .allowIO(IOAccess.ALL)
-                .allowAllAccess(true)
-                .allowHostAccess(HostAccess.ALL)
-                .allowHostClassLoading(true)
-                .allowHostClassLookup(className -> true)
-                .allowExperimentalOptions(true)
-                .option("js.esm-eval-returns-exports", "true");
-        if (chromeDebugPort > 0) {
-            logger.info("Debug mode for js plugin {} is enabled. Port: {}", pluginContainer.descriptor().getName(), chromeDebugPort);
-            // Debug mode is enabled
-            cbd.option("inspect", String.valueOf(chromeDebugPort))
-                    .option("inspect.Path", pluginContainer.descriptor().getName())
-                    .option("inspect.Suspend", "true")
-                    .option("inspect.Internal", "true")
-                    .option("inspect.SourcePath", pluginContainer.loader().getPluginPath().toFile().getAbsolutePath());
-        }
-        jsContext = cbd.build();
-
-        initGlobalMembers();
-
-        var entranceJsFileName = pluginContainer.descriptor().getEntrance();
-        var path = pluginContainer.loader().getPluginPath().resolve(entranceJsFileName);
-        jsExport = jsContext.eval(
-                Source.newBuilder("js", path.toFile())
-                        .name(entranceJsFileName)
-                        .mimeType("application/javascript+module")
+        logger = LoggerFactory.getLogger(getPluginContainer().descriptor().getName());
+        runtime = V8Host.getNodeInstance().createV8Runtime();
+        runtime.setLogger(new JavetLoggerAdapter(logger));
+        Path bundledScript = Bundler.bundle(
+                BundleOptions.builder()
+                        .withWorkDir(workingDirectory.toAbsolutePath())
+                        .addEntryPoint(getPluginContainer().descriptor().getEntrance())
+                        .withNodeModulesDir(workingDirectory.resolve("node_modules").toAbsolutePath())
+                        .withEsConfig(
+                                EsBuildConfig.builder()
+                                        .entryNames("[dir]/[name]")
+                                        .outDir("bundleResult")
+                                        .platform(EsBuildConfig.Platform.NODE)
+                                        .minify(true)
+                                        .build()
+                        )
                         .build()
-        );
-        tryCallJsFunction("onLoad");
+                , false
+        ).dist().resolve(getPluginContainer().descriptor().getEntrance().split("\\.")[0] + ".js");
+        runtime.setConverter(new JavetProxyConverter());
+        runtime.setV8ModuleResolver(new JavetBuiltInModuleResolver());
+        runtime.getGlobalObject().set("plugin", this);
+
+        V8ValueObject o = runtime.createV8ValueObject();
+        this.pluginPromiseModule = new JsPluginPromiseModule(runtime, o);
+        o.bind(pluginPromiseModule);
+        runtime.getGlobalObject().set("pluginState", o);
+        // Evaluation
+        runtime.getExecutor(bundledScript)
+                .setModule(true)
+                .executeVoid();
+        runtime.await();
+
     }
 
-    protected void initGlobalMembers() {
-        var binding = jsContext.getBindings("js");
-        binding.putMember("plugin", this);
-        binding.putMember("console", proxyLogger);
-    }
-
+    @SneakyThrows
     @Override
     public void onEnable() {
-        tryCallJsFunction("onEnable");
+        pluginPromiseModule.triggerOnEnable();
+        runtime.await();
     }
 
+    @SneakyThrows
     @Override
     public void onDisable() {
-        tryCallJsFunction("onDisable");
+        pluginPromiseModule.triggerOnDisable();
+        runtime.await();
     }
 
+    @SneakyThrows
     @Override
     public void onUnload() {
-        tryCallJsFunction("onUnload");
-        jsContext.close(true);
+        runtime.resetIsolate();
+        runtime.lowMemoryNotification();
+        runtime.close();
     }
 
     @Override
@@ -102,9 +118,4 @@ public class JsPlugin extends Plugin {
         onEnable();
     }
 
-    protected void tryCallJsFunction(String onLoad) {
-        var func = jsExport.getMember(onLoad);
-        if (func != null && func.canExecute())
-            func.executeVoid();
-    }
 }

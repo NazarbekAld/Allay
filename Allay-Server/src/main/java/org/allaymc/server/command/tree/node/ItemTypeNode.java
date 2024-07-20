@@ -7,14 +7,10 @@ import org.allaymc.api.i18n.TrKeys;
 import org.allaymc.api.item.registry.ItemTypeRegistry;
 import org.allaymc.api.item.type.ItemType;
 import org.allaymc.api.utils.Identifier;
-import org.cloudburstmc.protocol.bedrock.data.command.CommandEnumConstraint;
 import org.cloudburstmc.protocol.bedrock.data.command.CommandEnumData;
 import org.cloudburstmc.protocol.bedrock.data.command.CommandParamData;
 
-import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Allay Project 2024/7/8

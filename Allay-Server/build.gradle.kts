@@ -1,4 +1,6 @@
 import com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer
+import org.gradle.internal.os.OperatingSystem
+import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 
 plugins {
     `java-library`
@@ -16,6 +18,11 @@ version = "1.0.0"
 application {
     mainClass.set("org.allaymc.server.Allay")
 }
+
+fun isArm(): Boolean = DefaultNativePlatform.getCurrentArchitecture().isArm
+fun isWindows(): Boolean = DefaultNativePlatform.getCurrentOperatingSystem().isWindows
+fun isLinux(): Boolean = DefaultNativePlatform.getCurrentOperatingSystem().isLinux
+fun isMac(): Boolean = DefaultNativePlatform.getCurrentOperatingSystem().isMacOsX
 
 dependencies {
     api(project(":Allay-API"))
@@ -37,11 +44,30 @@ dependencies {
     implementation(libs.reflections)
     implementation(libs.caffeine)
     implementation(libs.polyglot)
-    implementation(libs.js)
     implementation(libs.bundles.graalvm)
     implementation(libs.oshi)
     implementation(libs.flatlaf)
     implementation(libs.formsrt)
+
+    // https://github.com/caoccao/Javet
+    implementation("com.caoccao.javet:javet:3.1.3")
+    implementation("com.caoccao.javet:javet-linux-arm64:3.1.3")
+    implementation("com.caoccao.javet:javet-macos:3.1.3")
+
+    if (isWindows()) {
+        testImplementation("com.caoccao.javet:javet:3.1.3")
+    } else if (isLinux() && !isArm()) {
+        testImplementation("com.caoccao.javet:javet:3.1.3")
+    } else if (isLinux() && isArm()) {
+        testImplementation("com.caoccao.javet:javet-linux-arm64:3.1.3")
+    } else if (isMac()) {
+        testImplementation("com.caoccao.javet:javet-macos:3.1.3")
+    } else {
+        error("Unknown OS for Javet.")
+    }
+
+    // https://github.com/mvnpm/esbuild-java
+    implementation("io.mvnpm:esbuild-java:1.4.3")
 
     testImplementation(libs.bytebuddy)
 }

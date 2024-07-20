@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.modifier.Visibility;
-import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.implementation.FieldAccessor;
 import net.bytebuddy.implementation.Implementation;
@@ -24,10 +23,7 @@ import org.allaymc.api.utils.exception.ComponentInjectException;
 import org.allaymc.server.eventbus.AllayEventBus;
 import org.allaymc.server.utils.ComponentClassCacheUtils;
 
-import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 

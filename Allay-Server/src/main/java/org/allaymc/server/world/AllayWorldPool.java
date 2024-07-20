@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Slf4j
 public final class AllayWorldPool implements WorldPool {
-    public static final Path WORLDS_FOLDER = Path.of("worlds");
+    public static final Path WORLDS_FOLDER = Path.of("worlds").toAbsolutePath(); // If path is not absolute, it tries read worlds from latest loaded js folder.
     public static final String SETTINGS_FILE_NAME = "world-settings.yml";
 
     private static final Set<Object> ALL_WORLDS_LISTENERS = Sets.newConcurrentHashSet();

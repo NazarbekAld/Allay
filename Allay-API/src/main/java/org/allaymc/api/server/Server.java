@@ -23,6 +23,8 @@ import org.cloudburstmc.protocol.bedrock.packet.BedrockPacket;
 import org.cloudburstmc.protocol.bedrock.packet.PlayerListPacket;
 import org.jetbrains.annotations.UnmodifiableView;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -33,11 +35,11 @@ public interface Server extends TaskCreator, CommandSender {
 
     ApiInstanceHolder<Server> INSTANCE = ApiInstanceHolder.create();
 
-    String SETTINGS_FILE_NAME = "server-settings.yml";
+    Path SETTINGS_FILE_PATH = Paths.get("server-settings.yml").toAbsolutePath();
 
     ServerSettings SETTINGS = ConfigManager.create(ServerSettings.class, it -> {
         it.withConfigurer(new YamlSnakeYamlConfigurer()); // specify configurer implementation, optionally additional serdes packages
-        it.withBindFile(SETTINGS_FILE_NAME); // specify Path, File or pathname
+        it.withBindFile(SETTINGS_FILE_PATH); // specify Path, File or pathname
         it.withRemoveOrphans(true); // automatic removal of undeclared keys
         it.saveDefaults(); // save file if it does not exist
         it.load(true); // load and save to update comments/new fields
